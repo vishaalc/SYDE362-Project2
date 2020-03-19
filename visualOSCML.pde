@@ -37,8 +37,8 @@ int count = 0;
 float lowLim = 0.2;
 float highLim = 0.8;
 
-float start = 0;
-boolean first = true;
+float start = 0.0;
+float timestamp = 0.0;
 
 Table table = new Table();
 
@@ -50,10 +50,7 @@ void setup()
   osc = new OscP5(this,12000); //listen for OSC messages on port 12000 (Wekinator default)
   dest = new NetAddress("127.0.0.1",6448); //send messages back to Wekinator on port 6448, localhost (this machine) (default)
   rectMode(CENTER);
-  //table.addColumn("decay1");
-  //table.addColumn("decay2");
-  //table.addColumn("decay3");
-  //table.addColumn("decay4");
+  table.addColumn("SAMPLES");
   table.addColumn("TIMESTAMP");
   table.addColumn("SOUND");
   
@@ -63,10 +60,6 @@ float[] numbers = {1,2,3,4,5,6,7,8,9,10};
     nextValue2(numbers[i]);
     nextValue3(numbers[i]);
     nextValue4(numbers[i]);
-//    println(average1);
-//    println(average2);
-//    println(average3);
- //   println(average4);
   }  
 }
 
@@ -135,11 +128,13 @@ void draw()
         || (decay4 == decayStart && (previousValue != currentValue)) 
         || (previousValue != currentValue)) {
       TableRow newRow = table.addRow();
-      //newRow.setFloat("decay1", decay1);
-      //newRow.setFloat("decay2", decay2);
-      //newRow.setFloat("decay3", decay3);
-      //newRow.setFloat("decay4", decay4);
-      newRow.setFloat("TIMESTAMP", (millis() - start)/1000.0);
+      
+      println(count, timestamp, start, millis());
+      
+      timestamp = (float(millis()) - start)/1000.0;
+      newRow.setFloat("SAMPLES", timestamp*44100.0);
+      newRow.setFloat("TIMESTAMP", timestamp);
+
       
       if(decay1 == decayStart) {
         newRow.setString("SOUND", "A");
@@ -169,15 +164,9 @@ void draw()
 
 //This is called automatically when OSC message is received
 void oscEvent(OscMessage theOscMessage) {
-  //println(theOscMessage);
  if (theOscMessage.checkAddrPattern("/wek/outputs")==true) {
-     if(first == true) {
-       start = millis();
-       first = false;
-     }
      if(theOscMessage.checkTypetag("ffff")) { //Now looking for parameters
         count++;
-        println(count);
         float p1 = theOscMessage.get(0).floatValue(); //get first parameter
         float p2 = theOscMessage.get(1).floatValue(); //get second parameter
         float p3 = theOscMessage.get(2).floatValue(); //get third parameter
@@ -193,6 +182,12 @@ void oscEvent(OscMessage theOscMessage) {
         println("Error: unexpected params type tag received by Processing");
       }
  }
+ else if (theOscMessage.checkAddrPattern("/event")==true) {
+   String event = theOscMessage.get(0).stringValue();
+   if (event.equals("start")) {
+     start = float(millis());
+   }
+}
 }
 
 // Use the next value and calculate the
