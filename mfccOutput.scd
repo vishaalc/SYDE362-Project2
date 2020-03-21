@@ -22,7 +22,8 @@ s.boot;
 x = {
     var in, fft, array;
     in = SoundIn.ar(0);
-    fft = FFT(LocalBuf(1024), in);  // for sampling rates 44100 and 48000
+	filtered_in = LPF.ar(in: in, freq: 5300, mul: 1.0, add: 0.0); //Low pass filter with 5300Hz cutoff
+    fft = FFT(LocalBuf(1024), filtered_in);  // for sampling rates 44100 and 48000
     array = MFCC.kr(fft);
 	Out.kr(0, array); // control bus out
 }.play;
