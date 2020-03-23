@@ -59,8 +59,14 @@ void setup()
   //table.addColumn("decay2");
   //table.addColumn("decay3");
   //table.addColumn("decay4");
+  table.addColumn("SAMPLE COUNT");
   table.addColumn("TIMESTAMP");
   table.addColumn("SOUND");
+  TableRow firstRow = table.addRow();
+  firstRow.setInt("SAMPLE COUNT", 0);
+  firstRow.setFloat("TIMESTAMP", 0.0);
+  firstRow.setString("SOUND", "Delay");
+  previousValue = 0;
   
 float[] numbers = {1,2,3,4,5,6,7,8,9,10};
   for(int i = 0; i < numbers.length; i++){
@@ -77,6 +83,10 @@ float[] numbers = {1,2,3,4,5,6,7,8,9,10};
 
 void draw()
 {
+  if (first) {
+    return;
+  }
+  
   background(255, 255, 255);
   if((average1 > highLim) && (average2 < lowLim) && (average3 < lowLim)  && (average4 < lowLim)) {
     decay1 = decayStart;
@@ -157,38 +167,40 @@ void draw()
         || (decay4 == decayStart && (previousValue != currentValue)) 
         || (previousValue != currentValue)) {
       TableRow newRow = table.addRow();
-      //newRow.setFloat("decay1", decay1);
-      //newRow.setFloat("decay2", decay2);
-      //newRow.setFloat("decay3", decay3);
-      //newRow.setFloat("decay4", decay4);
       newRow.setFloat("TIMESTAMP", (millis() - start)/1000.0);
       
       if(decay1 == decayStart) {
         newRow.setString("SOUND", "A");
+       // println("A");
         previousValue = 1;
         heightA = heightA + 25;
       }
       else if(decay2 == decayStart) {
         newRow.setString("SOUND", "B");
+      //  println("B");
         previousValue = 2;
         heightB = heightB + 25;
       }
       else if(decay3 == decayStart) {
         newRow.setString("SOUND", "C");
+        //println("C");
         previousValue = 3;
         heightC = heightC + 25;
       }
       else if(decay4 == decayStart) {
         newRow.setString("SOUND", "D");
+        //println("D");
         previousValue = 4;
         heightD = heightD + 25;
       }
-      else {
+      else if (previousValue != -1) {
         newRow.setString("SOUND", "Delay");
+       // println("Delay");
         previousValue = 0;
       }
-      saveTable(table, "data/new.csv");
+      newRow.setInt("SAMPLE COUNT", count);
     }
+    
     
     
 }
@@ -197,13 +209,8 @@ void draw()
 void oscEvent(OscMessage theOscMessage) {
   //println(theOscMessage);
  if (theOscMessage.checkAddrPattern("/wek/outputs")==true) {
-     if(first == true) {
-       start = millis();       
-       first = false;
-     }
      if(theOscMessage.checkTypetag("ffff")) { //Now looking for parameters
         count++;
-        println(count);
         float p1 = theOscMessage.get(0).floatValue(); //get first parameter
         float p2 = theOscMessage.get(1).floatValue(); //get second parameter
         float p3 = theOscMessage.get(2).floatValue(); //get third parameter
@@ -219,6 +226,18 @@ void oscEvent(OscMessage theOscMessage) {
         println("Error: unexpected params type tag received by Processing");
       }
  }
+ else if (theOscMessage.checkAddrPattern("/event")==true) {
+   String event = theOscMessage.get(0).stringValue();
+   if (event.equals("start")) {
+     first = false;
+     start = float(millis());
+     //println("got the processing message");
+   }
+   else if (event.equals("end")) {
+     saveTable(table, "data/new.csv");
+     //println("reached end of file");
+   }
+}
 }
 
 // Use the next value and calculate the
