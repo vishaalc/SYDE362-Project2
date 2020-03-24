@@ -1,0 +1,4 @@
+Filename,ID Accuracy,Latency
+Control Test-50.csv,0.98,67.94897959183673
+Control Test-30.csv,1.0,49.64666666666667
+Control Test-10.csv,0.8888888888888888,71.9

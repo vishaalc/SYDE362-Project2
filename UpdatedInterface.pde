@@ -166,6 +166,7 @@ void draw()
         || (decay3 == decayStart && (previousValue != currentValue)) 
         || (decay4 == decayStart && (previousValue != currentValue)) 
         || (previousValue != currentValue)) {
+      
       TableRow newRow = table.addRow();
       newRow.setFloat("TIMESTAMP", (millis() - start)/1000.0);
       
@@ -201,8 +202,18 @@ void draw()
       newRow.setInt("SAMPLE COUNT", count);
     }
     
-    
-    
+}
+
+void reset() {
+  decay1 = 200;
+  decay2 = 200;
+  decay3 = 200;
+  decay4 = 200;
+  
+  heightA = 10;
+  heightB = 10;
+  heightC = 10;
+  heightD = 10;
 }
 
 //This is called automatically when OSC message is received
@@ -228,14 +239,24 @@ void oscEvent(OscMessage theOscMessage) {
  }
  else if (theOscMessage.checkAddrPattern("/event")==true) {
    String event = theOscMessage.get(0).stringValue();
+   String soundfile = (theOscMessage.get(1).stringValue());
    if (event.equals("start")) {
      first = false;
+     println("Starting Processing on " + soundfile);
+     //Reset Processing global vars
+     reset();
+     
+     //Add initial delay row to match with professor's csv
+     TableRow newRow = table.addRow();
+     newRow.setFloat("TIMESTAMP", 0);
+     newRow.setString("SOUND", "Delay");
+     newRow.setInt("SAMPLE COUNT", 0);
      start = float(millis());
-     //println("got the processing message");
    }
    else if (event.equals("end")) {
-     saveTable(table, "data/new.csv");
-     //println("reached end of file");
+     saveTable(table, "data/" + soundfile +".csv");
+     println("Done Processing on " + soundfile );
+     table.clearRows();
    }
 }
 }
