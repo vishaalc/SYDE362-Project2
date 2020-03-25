@@ -11,20 +11,22 @@ s.boot;
 
 // 2. Run this block to get the file
 (
-d = Buffer.read(s, "/Users/Sean/Documents/Option 3 - ML Files for Students/Control Test Failures/Control Test-50.wav");
+f = "Control Test-10";
+d = Buffer.read(s, "/Users/Neil/Documents/Projects/362-ML/Option 3 - ML Files for Students/Control Test Failures/" ++ f ++ ".wav");
 )
 
-// 3. Run this block to set up communication to wekinator and processing.
-//    You may have to run both lines separately.
+// 3. Run these blocks to set up communication to wekinator and processing.
 (
- // create a network address and assign it to a global variable
 	~toWekinator = NetAddr.new("127.0.0.1", 6448);
+)
+
+(
 	~toProcessing = NetAddr.new("127.0.0.1", 12000);
 )
 
 // 4. Run this whole block of code at once to play the file a single time and send it
 (
-~toProcessing.sendMsg("/event","start");
+~toProcessing.sendMsg("/event","start", f);
 
 y = SynthDef("tutorial-PlayBuf",{ arg out = 0, bufnum;
 Out.ar( out, PlayBuf.ar(1, bufnum, BufRateScale.kr(bufnum), loop: 0))
@@ -53,7 +55,7 @@ r = {
 
 // 5. Run this block last. Processing listens for this and then outputs its results to a csv file
 (
-~toProcessing.sendMsg("/event","end");
+~toProcessing.sendMsg("/event","end", f);
 )
 
 )
