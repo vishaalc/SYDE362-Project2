@@ -3,13 +3,15 @@
 
 #Libraries 
 import csv 
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import statistics as stats
 
 #User Defined Variables
-files_to_compare = ["Control Test-50.csv", "Control Test-30.csv", "Control Test-10.csv"]
+files_to_compare = ["Control Test-50.csv", "Control Test-30.csv", "Control Test-10.csv", "Control Test-100-1.csv", 
+"Control Test-100-2.csv", "Control Test-100-3.csv", "Control Test-100-4.csv", "Control Test-100-5.csv", "Control Test-100-6.csv",
+"Control Test-100-7.csv", "Control Test-100-8.csv", "Control Test-100-9.csv"]
 
-#Variables
+#Header for Summary CSV
 summary = [['Filename', 'ID Accuracy', 'Latency']] 
 
 #Iterate through every file
@@ -56,37 +58,46 @@ for file in files_to_compare:
 	latency = []
 	i = 0
 	j = 0
-	min_len = min(len(generated_sound), len(actual_sound))
+	generated_len = len(generated_sound)
+	actual_len = len(actual_sound)
 
-	#Iterate using smaller list which usually should be generated list
-	while i < min_len:
+	#Iterate using actual list
+	while i < actual_len:
 		
-		if generated_sound[i] == actual_sound[j]:
+		#if our list is done, the rest are misses
+		if j == generated_len:
+			i += 1
+			missed += 1
+			continue
+
+		#the sound was correctly identified
+		if actual_sound[i] == generated_sound[j]:
 			correct += 1
 			#latency (ms) calculation for when a row matches up 
-			latency.append(round(1000*abs(float(generated_timestamp[i]) - float(actual_timestamp[j])), 1))
+			latency.append(round(1000*abs((float(actual_timestamp[i]) - float(generated_timestamp[j]))), 1))
 
-		#Need to identify between missed, extra added and incorrect so know how to move indexes for comparisons
+		#Need to identify between missed, extra added and incorrect so we know how to move indexes for comparisons
 		else:
-			if i == len(generated_sound) or j == len(actual_sound):
-				incorrect += 1
-			#its unlikely that we will see errors clustered together so assuming error is isolated 
-			# and other rows around should be correct
-			elif generated_sound[i] == actual_sound[j+1] and generated_sound[i + 1] == actual_sound[j+2]:
+			if ((i < actual_len - 1 and actual_sound[i+1] == generated_sound[j])):
 				missed += 1
-				i -= 1
-			elif generated_sound[i + 1] == actual_sound[j] and generated_sound[i + 2] == actual_sound[j + 1]:
+				j -= 1
+
+			elif (( j < generated_len - 1 and actual_sound[i] == generated_sound[j + 1])):
 				added += 1
-				i += 1 
+				i -= 1
+			#this logic only checks for misses and additions that happen indivudally, if there are sucessive misses, the 
+			#algorithm will classify them all as incorrect and be out of phase for the remainder of the comparison.
 			else:
 				incorrect += 1
+				#latency (ms) calculation, can maybe remove from here?
+				latency.append(round(1000*abs((float(actual_timestamp[i]) - float(generated_timestamp[j]))), 1))
 
 		i += 1 
 		j += 1 
 
 	#Calculate identification accuracy and average latency for this file
-	accuracy = correct/(correct +missed +added + incorrect)
-	average_latency =  stats.mean(latency)
+	accuracy = round((correct/(correct + missed + added + incorrect)) * 100, 2)
+	average_latency =  round(stats.mean(latency), 2)
 
 	#Add this file's important info to overall summary csv
 	summary.append([file, accuracy, average_latency])

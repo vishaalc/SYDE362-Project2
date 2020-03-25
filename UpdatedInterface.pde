@@ -246,11 +246,6 @@ void oscEvent(OscMessage theOscMessage) {
      //Reset Processing global vars
      reset();
      
-     //Add initial delay row to match with professor's csv
-     TableRow newRow = table.addRow();
-     newRow.setFloat("TIMESTAMP", 0);
-     newRow.setString("SOUND", "Delay");
-     newRow.setInt("SAMPLE COUNT", 0);
      start = float(millis());
    }
    else if (event.equals("end")) {
