@@ -150,19 +150,15 @@ void draw()
     text("B",155,245); 
     text("C",155,405); 
     text("D",155,570);
-    println(global_event);
-    if (global_event != "end") {
-      textFont(f, 16);
-      fill(0);
-      if (start > 0) {
+    textFont(f, 16);
+    fill(0);
+      if (start > 0 && global_event != "end") {
         elasped = millis() - start; 
       }
-      else {
-        elasped = 0;
-      }
+    
       s = (elasped/ 1000) % 60;
       text(s, 915, 30);
-    }
+
    
     
     if(decay1 == decayStart) {
