@@ -30,10 +30,10 @@ int decay2 = 200;
 int decay3 = 200;
 int decay4 = 200;
 
-int heightA = 10;
-int heightB = 10;
-int heightC = 10;
-int heightD = 10;
+int heightA = 5;
+int heightB = 5;
+int heightC = 5;
+int heightD = 5;
 
 int decayStart = 200;
 int decayAmount = 10;
@@ -46,6 +46,11 @@ float start = 0;
 boolean first = true;
 
 Table table = new Table();
+
+PFont f;  
+float elasped = 0.0;
+float s = 0;
+String global_event = "";
 
 
 void setup()
@@ -68,16 +73,14 @@ void setup()
   firstRow.setString("SOUND", "Delay");
   previousValue = 0;
   
+  f = createFont("Arial-Black",24,true);
+  
 float[] numbers = {1,2,3,4,5,6,7,8,9,10};
   for(int i = 0; i < numbers.length; i++){
     nextValue1(numbers[i]);
     nextValue2(numbers[i]);
     nextValue3(numbers[i]);
     nextValue4(numbers[i]);
-//    println(average1);
-//    println(average2);
-//    println(average3);
- //   println(average4);
   }  
 }
 
@@ -86,7 +89,6 @@ void draw()
   if (first) {
     return;
   }
-  
   background(255, 255, 255);
   if((average1 > highLim) && (average2 < lowLim) && (average3 < lowLim)  && (average4 < lowLim)) {
     decay1 = decayStart;
@@ -121,28 +123,46 @@ void draw()
     if(decay4 < 0){decay4 = 0;}
   
     //Drawing all the rectangles
-    fill(decay1 + 100,0,0); //A
+    fill(decay1 + 100,0,0, 200); //A
     rect(168, 73, 300,  100, 20);
-    fill(0,decay2+ 100,0); //B
+    fill(0,decay2+ 100,0, 200); //B
     rect(168, 234, 300, 100, 20);
-    fill(0,0,decay3+100);//C
+    fill(0,0,decay3+100, 200);//C
     rect(168, 395,  300,100, 20);  
-    fill(decay4 +54, decay4, decay4 +55);//D
+    fill(decay4 +54, decay4, decay4 +55, 200);//D
     rect(168, 556, 300,  100, 20);  
+    
     //Histogram
     fill(256, 256, 256);
-    rect(700, 650-312.5, 485,  625, 20); 
+    rect(630, 650-312.5, 485,  625, 20); 
     fill(256,0,0);// A
-    rect(545, 650-(heightA/2), 80,  heightA); 
+    rect(475, 650-(heightA/2), 80,  heightA); 
     fill(0,256,0);// B
-    rect(645, 650-(heightB/2), 80,  heightB); 
+    rect(575, 650-(heightB/2), 80,  heightB); 
     fill(0,0,256);// C
-    rect(745, 650-(heightC/2), 80,  heightC); 
+    rect(675, 650-(heightC/2), 80,  heightC); 
     fill(256,41,255);// D
-    rect(845, 650-(heightD/2), 80,  heightD); 
+    rect(775, 650-(heightD/2), 80,  heightD); 
     
-    //textSize(32);
-    //text("word", 168, 73);
+    textFont(f,30);    
+    fill(0, 255);                        
+    text("A",155,80);   
+    text("B",155,245); 
+    text("C",155,405); 
+    text("D",155,570);
+    println(global_event);
+    if (global_event != "end") {
+      textFont(f, 16);
+      fill(0);
+      if (start > 0) {
+        elasped = millis() - start; 
+      }
+      else {
+        elasped = 0;
+      }
+      s = (elasped/ 1000) % 60;
+      text(s, 915, 30);
+    }
    
     
     if(decay1 == decayStart) {
@@ -218,7 +238,6 @@ void reset() {
 
 //This is called automatically when OSC message is received
 void oscEvent(OscMessage theOscMessage) {
-  //println(theOscMessage);
  if (theOscMessage.checkAddrPattern("/wek/outputs")==true) {
      if(theOscMessage.checkTypetag("ffff")) { //Now looking for parameters
         count++;
@@ -247,11 +266,13 @@ void oscEvent(OscMessage theOscMessage) {
      reset();
      
      start = float(millis());
+     global_event = "start";
    }
    else if (event.equals("end")) {
      saveTable(table, "data/" + soundfile +".csv");
      println("Done Processing on " + soundfile );
      table.clearRows();
+     global_event = "end";
    }
 }
 }
